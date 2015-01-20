@@ -1232,7 +1232,7 @@ void ReadPureBinary(char* fname, Cursor* cur){
 			strcpy(fname2,dn);
 			strcat(fname2,"/denOneToOne_");
 			strcat(fname2, str);
-			strcat(fname2, ".txt");
+			strcat(fname2, ".csv");
 			fp = fopen(fname2, "w");
 			for (j = 0; j < cur->M; j++){
 				fprintf (fp, "\"h%d_h%d\"", i, j);

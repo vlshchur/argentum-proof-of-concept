@@ -70,7 +70,11 @@ def Write3DListInFile(arr, dir, fname, mode):
             except:
                 print "Impossible to create directory " + dn
                 sys.exit()
-        fn = dn + "/" + fname + "_" + str(i).zfill(3) + ".txt"
+        fn = dn + "/" + fname + "_" + str(i).zfill(3)
+        if mode == "tab":
+            fn = fn + ".txt"
+        else:
+            fn = fn + ".csv"
         f = open(fn, 'w')
         for j in range(n):
             if i == j:
