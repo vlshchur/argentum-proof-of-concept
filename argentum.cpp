@@ -1352,6 +1352,22 @@ void Tree::NewickTreeBuf(Cursor *cur){
 	std::cin >> c1;
 }
 
+void Help(){
+	std::cout << "Help page for ARGentum." << std::endl;
+	std::cout << "Compile simply with g++ -o argentum argentum.cpp" << std::endl;
+	std::cout << "To get help run ./argentum without parameters." << std::endl;
+	std::cout << "Run the program with the command ./argentum -r [input file name] ...optional flags." << std::endl;
+	std::cout << "-not - cancel the output of local trees. By default local trees are outputed in Newick format to the stadndard output." << std::endl;
+	std::cout << "-dist - calculate the relative distance between haplotypes based on a sum of exponents of minimal branch size distribution. You can also set the metric parameter with -param [FLOAT]. -minBr [INTEGER] and -maxBr [INTEGER] allows to set tresholds for minimal branch size wich are included in the summary." << std::endl;
+	std::cout << "-brDist - calculate the pairwise minimal branch size distribution. Output in PBWTout folder. Ignores first M sites." << std::endl;
+	std::cout << "-brDistPop - calculate the average of -brDist within and between populations. Population parameters should be pregiven in the code... TODO" << std::endl;
+	std::cout << "-bDPsample [INTEGER] - allows to sample -brDist or -brDistPop, chooses every 1 in INTEGER trees." << std::endl;
+	std::cout << "-lc [INTEGER] - set the line counter (reports every INTEGER line) to track the progress." << std::endl;
+	std::cout << "-lf [INTEGER] - set the size of buffer (for example for look forward purpose)." << std::endl;
+	std::cout << "-ll [INTEGER] - set the maxmimal number of sites to process."  << std::endl;
+	std::cout << "-ns [INTEGER] - seems to be the same as -ll... TODO" << std::endl;
+}
+
 int main(int argc, char *argv[]){
 	int i;
 	char path[255];
@@ -1366,9 +1382,8 @@ int main(int argc, char *argv[]){
 	std::cout << "Welcome to tcPBWT ARG." << std::endl;
 //	FirstTest();
 //	ReadMacs(fname, &cur);
-	
-	if (argc <= 2){
-		std::cout << "Need more arguments." << std::endl;
+	if (argc < 3){
+		Help();
 		return 0;
 	}
 	if (strcmp(argv[1], "-r") == 0){
@@ -1426,7 +1441,7 @@ int main(int argc, char *argv[]){
 			bDPsample = strtol(argv[i+1], NULL, 10);
 			i+=2;
 			if (!branchDistPop){
-				std::cout << "WARNING: You have set the flag -bDPsample, but you have not set the flag -brDistPop, distance will not be computed." << std::endl;
+				std::cout << "WARNING: You have set the flag -bDPsample, but you have not set -brDist or -brDistPop flag, distance will not be computed." << std::endl;
 			}
 		}
 		else if (strcmp(argv[i], "-lc") == 0){
