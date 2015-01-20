@@ -13,6 +13,7 @@ my $sub;
 my $repStr=0;
 
 print "Hello! Let us repair ancestral alleles.\n";
+print "Use the following command to run the script.\n./vcf2bin.pl [filename.vcf] [optional: INTEGER - number of maximal number of lines to output]\n";
 if (!defined $ARGV[0]){
 	die("Script called without file name.");
 }
