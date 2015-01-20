@@ -1042,6 +1042,8 @@ void ReadPureBinary(char* fname, Cursor* cur){
 				exit(EXIT_FAILURE);
 			}
 		}while(c != '\n' && c!= EOF);
+		if (x.size() == 0)
+			break;
 		if (cur->M != x.size()){
 			std::cout << "Fatal error: wrong number of haplotypes, line " << i << "." << std::endl;
 			exit(EXIT_FAILURE);
@@ -1102,6 +1104,8 @@ void ReadPureBinary(char* fname, Cursor* cur){
 						break;
 				}
 			}while(c != '\n' && c!= EOF);
+			if (x.size() == 0)
+				break;
 			if (cur->M != x.size()){
 				std::cout << "Fatal error: wrong number of haplotypes, line " << cur->N+cur->lf << "." << std::endl;
 				exit(EXIT_FAILURE);
