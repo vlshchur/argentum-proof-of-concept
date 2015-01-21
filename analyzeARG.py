@@ -81,6 +81,8 @@ def Write3DListInFile(arr, dir, fname, mode):
                 arr[i][j][0] = 1
             else:
                 arr[i][j][0] = sum(arr[i][j])
+                if arr[i][j][0] == 0:
+                    arr[i][j][0] = 1
             colName = "h"+str(i)+"_"+"h"+str(j)
             if mode == "csv":
                 colName = "\"" + colName + "\""
