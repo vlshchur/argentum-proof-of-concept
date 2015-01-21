@@ -888,6 +888,7 @@ void Tree::BranchDistPop(std::vector< std::vector<unsigned long long> >& brDistP
 void Tree::BranchDist(std::vector< std::vector<unsigned long long> >& brDist, std::vector<int>& cd, Cursor* cur){
 	int i, j, k, l;
 	std::vector<Branch>::iterator it;
+	int h1, h2;
 	char c;
 	int counter = 0;
 //	if (cur->N%1000 == 0)
@@ -901,9 +902,11 @@ void Tree::BranchDist(std::vector< std::vector<unsigned long long> >& brDist, st
 			continue;
 		for (i = it->start; i < it->start+it->length-1; i++){
 			for (j = i+1; j < it->start+it->length; j++){
-				if (cd[j+cur->M*i] > it->length){
-					cd[j+cur->M*i] = it->length;
-					cd[j+cur->M*i] = it->length;
+				h1 = cur->a[i];
+				h2 = cur->a[j];
+				if (cd[h1+cur->M*h2] > it->length){
+					cd[h1+cur->M*h2] = it->length;
+					cd[h2+cur->M*h1] = it->length;
 				}
 			}
 		}
