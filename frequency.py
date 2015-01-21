@@ -17,6 +17,7 @@ def RWrite3DListInFile(arr, dir, fname):
         fn = dn + "/" + fname + "_" + str(i).zfill(3) + ".csv"
         f = open(fn, 'w')
         colNames = "\"Size\",\"Frequency\",\"Haplotype1\",\"Haplotype2\"\n"
+        f.write(colNames)
         for j in range(n):
             if i == j:
                 arr[i][j][0] = 1
