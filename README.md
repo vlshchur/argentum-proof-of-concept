@@ -6,6 +6,8 @@ argentum.cpp - reads a "binary" file and builds a tcPBWT-ARG
 
 binaryTree.py - generates random binary trees under a well-mixture assumption and counts minimal branch sizes
 
+frequency.py - find site frequency spectrum shared between individuals
+
 macs-edit.pl - mainly used to convert MACS-file to a "binary" file (sites represented as strings of 0 and 1)
 
 vcf2bin.pl - read vcf and outputs all lines where a value of AA field is known as a string of 0 (ancestral allele) and 1 (derived allele)
