@@ -60,14 +60,14 @@ with open(fname) as f:
         s = list(line)
         if len(s) == 0:
             continue
+        fr = s.count('1')
+        if fr + s.count('0') != len(s):
+            continue
         if n == -1:
             n = len(s)
             print str(n) + " haplotypes."
             InitializeLists(density, n)
         elif len(s) != n & len(s) > 0:
-            break
-        fr = s.count('1')
-        if fr + s.count('0') != n:
             break
         counter+=1
         for i in range(n):
@@ -77,5 +77,7 @@ with open(fname) as f:
                         density[i][j][fr-1] += 1
                         density[j][i][fr-1] += 1
 
-RWrite3DListInFile(density, "frequency", "freq")
-
+if counter != 0:
+    RWrite3DListInFile(density, "frequency", "freq")
+else:
+    print "No sites found."
