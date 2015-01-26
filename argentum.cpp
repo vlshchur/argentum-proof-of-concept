@@ -895,7 +895,7 @@ void Tree::BranchDist(std::vector< std::vector<unsigned long long> >& brDist, st
 //	std::cout << "Tree size " << Tree::branch.size() << std::endl;		
 //	std::cout << "Vector size " << dist.size() << std::endl;
 //	std::cin >> c;
-	for (i = 0; i < cur->M; i++)
+	for (i = 0; i < cur->M*cur->M; i++)
 		cd[i] = cur->M;
 	for (it = Tree::branch.begin()+1; it != Tree::branch.end(); it++){
 		if (it->length < 2 || it->start < 0)
