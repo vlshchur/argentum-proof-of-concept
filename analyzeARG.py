@@ -142,7 +142,7 @@ if mode == "-h":
     print "-ll [integer]: set the line limit (the number of trees to be processed)."
     print "-sl [integer]: set the sampling parameter."
     print "-of [tab, csv]: set the output format."
-    print "-of [integer]: set the line counter."
+    print "-lc [integer]: set the line counter."
     sys.exit()
 
 try:
