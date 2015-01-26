@@ -3,14 +3,13 @@
 use strict;
 use warnings;
 
-my $counter=0;
 my($fn, $lines);
 my @m;
 my $tmp;
 my $sub;
 my $mode;
-#my $lines=10;
-#my $count=0;
+my $ll = -1;
+my $counter=0;
 
 print "Hello! Here are some instruments to edit MACS file.\n";
 if (!defined $ARGV[0]){
@@ -19,6 +18,11 @@ if (!defined $ARGV[0]){
 $fn = $ARGV[0];
 if (!defined $ARGV[1] && $ARGV[1] != "-t" && $ARGV[1] != "-d" && $ARGV[1] != "-s"){
 	die("Choose mode:\n-t to leave only topology\n-d to delete trees\n-s to show symbol structure (replace tabs by TAB and spaces by SPA)\n-bin to leave only binary.\n");
+}
+$mode = $ARGV[1];
+
+if (defined $ARGV[2]){
+	$ll = $ARGV[2];
 }
 $mode = $ARGV[1];
 
@@ -49,11 +53,12 @@ if ($mode eq "-bin"){
 			next;
 		}
 		@m = $tmp =~ /([01]*)$/;
-		print OUT "\n," $1;
-#		$count ++;
-#		if ($count == $lines){
-#			last;
-#		}
+#		print join(", ", @m) . "\n";
+		print OUT "\n" . $1;
+		$counter++;
+		if ($counter == $ll){
+			last;
+		}
 	}
 }
 if ($mode eq "-s"){
