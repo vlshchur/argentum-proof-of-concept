@@ -76,6 +76,11 @@ def Write3DListInFile(arr, dir, fname, mode):
         else:
             fn = fn + ".csv"
         f = open(fn, 'w')
+        if mode == "csv":
+            colName = "\"Size\",\"Frequency\",\"Haplotype1\",\"Haplotype2\"\n"
+        else:
+            colName = "Size\tFrequency\tHaplotype1\tHaplotype2\"\n"
+        f.write(colName)
         for j in range(n):
             if i == j:
                 arr[i][j][0] = 1
@@ -83,28 +88,26 @@ def Write3DListInFile(arr, dir, fname, mode):
                 arr[i][j][0] = sum(arr[i][j])
                 if arr[i][j][0] == 0:
                     arr[i][j][0] = 1
-            colName = "h"+str(i)+"_"+"h"+str(j)
-            if mode == "csv":
-                colName = "\"" + colName + "\""
-            f.write(colName)
-            if j == n-1:
-                f.write("\n")
-            else:
-                if mode == "tab":
-                    f.write("\t")
-                else:
+        for j in range(n):
+            for k in range(1,n):
+                f.write(str(k+1))
+                if mode == "csv":
                     f.write(",")
-        for k in range(1,n):
-            for j in range(n):
-                f.write(str(float(arr[i][j][k])/arr[i][j][0]))
-                if j == n-1:
-                    f.write("\n")
                 else:
-                    if mode == "tab":
-                        f.write("\t")
-                    else:
-                        f.write(",")
-    f.close()
+                    f.write("\t")
+                f.write(str(float(arr[i][j][k])/arr[i][j][0]))
+                if mode == "csv":
+                    f.write(",")
+                else:
+                    f.write("\t")
+                f.write(str(i))
+                if mode == "csv":
+                    f.write(",")
+                else:
+                    f.write("\t")
+                f.write(str(j))
+                f.write("\n")
+        f.close()
 
 
 
@@ -141,7 +144,7 @@ if mode == "-h":
     print "Second parameter specifies the filename."
     print "-ll [integer]: set the line limit (the number of trees to be processed)."
     print "-sl [integer]: set the sampling parameter."
-    print "-of [tab, csv]: set the output format."
+    print "-of [tab, csv]: set the output format (\'csv\' by default)."
     print "-lc [integer]: set the line counter."
     sys.exit()
 
