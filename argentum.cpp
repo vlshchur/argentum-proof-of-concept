@@ -15,11 +15,13 @@ bool outputTree = true;
 bool relativeDist = false;
 bool branchDist = false;
 bool branchDistPop = false;
+bool branchDyn = false;
 double distParameter = 1.0;
 int minBr = 2, maxBr = 0;
 int lineNum = 0;
 int bDPsample = 1, lineCounter = 10000;
 int numOfSites = -1;
+int brDynSample = 5;
 time_t t1, t2;
 double t3=0.0;
 
@@ -90,6 +92,8 @@ class Tree{
 		void Distance(double , std::vector<double>&, std::vector<double>&, Cursor* );
 		void BranchDist(std::vector< std::vector<unsigned long long> >& , std::vector<int>& , Cursor* );
 		void BranchDistPop(std::vector< std::vector<unsigned long long> >& , std::vector<int>& , std::vector<std::pair<int, int> > , int , Cursor* );
+		void BranchDynamics(std::vector< std::vector<int> >& , std::vector<int>& , std::vector< std::pair<int, int> >& , Cursor* );
+		void LocalClusterDistance(std::vector<int>& , Cursor* , bool );
 		void TreeSize(Cursor* );
 		int CommonAncestor(int , int , int*);
 		void BranchDistPop1(std::vector< std::vector<unsigned long long> >& , std::vector<int>& , std::vector<std::pair<int, int> > , int , Cursor* );
@@ -916,6 +920,57 @@ void Tree::BranchDist(std::vector< std::vector<unsigned long long> >& brDist, st
 	}
 }
 
+void Tree::LocalClusterDistance(std::vector<int>& cd, Cursor* cur, bool tiebreak = false){
+	int i, j, k;
+	std::vector<Branch>::iterator it;
+	int h1, h2;
+	for (i = 0; i < cur->M*cur->M; i++)
+		cd[i] = cur->M;
+	for (it = Tree::branch.begin()+1; it != Tree::branch.end(); it++){
+		if (it->length < 2 || it->start < 0)
+			continue;
+		for (i = it->start; i < it->start+it->length-1; i++){
+			for (j = i+1; j < it->start+it->length; j++){
+				h1 = cur->a[i];
+				h2 = cur->a[j];
+				if (cd[h1+cur->M*h2] > it->length){
+					cd[h1+cur->M*h2] = it->length;
+					cd[h2+cur->M*h1] = it->length;
+				}
+			}
+		}
+	}
+/*	if (cur->N == 30){
+		for (i = 0; i < cur->M*cur->M; i++)
+			std::cout << cd[i] << ", ";
+		std::cout << std::endl;
+	}*/
+}
+
+
+void Tree::BranchDynamics(std::vector< std::vector<int> >& brDyn, std::vector<int>& cd, std::vector< std::pair<int, int> >& pairs, Cursor* cur){
+	int i, j, k, l;
+	std::vector<Branch>::iterator it;
+	int h1, h2;
+	char c;
+	int counter = 0;
+//	if (cur->N%1000 == 0)
+//	std::cout << "Tree size " << Tree::branch.size() << std::endl;		
+//	std::cout << "Vector size " << dist.size() << std::endl;
+//	std::cin >> c;
+	Tree::LocalClusterDistance(cd, cur, false);
+/*	if (cur->N == 30){
+		for (i = 0; i < cur->M*cur->M; i++)
+			std::cout << cd[i] << ", ";
+		std::cout << std::endl;
+	}*/
+	for (i = 0; i < pairs.size(); i++){
+		h1 = pairs[i].first;
+		h2 = pairs[i].second;
+		brDyn[i].push_back(cd[h1+cur->M*h2]-1);
+	}
+}
+
 
 void Tree::TreeSize(Cursor* cur){
 	std::vector<Branch>::iterator it;
@@ -944,6 +999,8 @@ void ReadPureBinary(char* fname, Cursor* cur){
 	std::vector<double> dist, cd;
 	std::vector< std::vector<unsigned long long> > brDist;
 	std::vector<unsigned long long> init;
+	std::vector< std::pair<int, int> > pairs;
+	std::vector< std::vector<int> > brDyn;
 	int sampleNum = 0;
 	double norm;
 //	int popSize[] = {96, 61, 99, 113, 99, 85, 108, 94, 64, 85, 104, 93, 103, 105, 104, 99, 99, 99, 91, 107, 107, 86, 103, 102, 96, 102};
@@ -954,6 +1011,7 @@ void ReadPureBinary(char* fname, Cursor* cur){
 	int numPop = 1;
 	std::vector<std::pair<int, int> > hapGroups;
 	std::vector<int> cd1;
+	std::vector<int> emptyVector;
 //	std::istream fs (fname);
 	char c, c1;
 	tmp = 0;
@@ -1027,6 +1085,18 @@ void ReadPureBinary(char* fname, Cursor* cur){
 		for (i = 0; i < numPop*(numPop+1)/2; i++)
 			brDist.push_back(init);
 	}
+	if (branchDyn){
+		for (i = 0; i < cur->M*cur->M; i++)
+			cd1.push_back(0);
+		for (i = 0; i < cur->M; i++)
+			for (j = 0; j < brDynSample; j++){
+				k = static_cast <int>( floor(pow(73+sqrt(47*((j+103)%17)), 2)))%cur->M;
+				pairs.push_back(std::make_pair(i, k) );
+				brDyn.push_back(emptyVector);
+			}
+	}
+/*	for (i = 0; i < pairs.size(); i++)
+		std::cout << pairs[i].first << ", " << pairs[i].second << std::endl;*/
 	x.clear();
 	
 	//Fill buffer with first lines
@@ -1079,6 +1149,10 @@ void ReadPureBinary(char* fname, Cursor* cur){
 		}
 		if (branchDistPop && cur->N%bDPsample==0 && cur->N > cur->M){
 			tree.BranchDistPop(brDist, cd1, hapGroups, numPop, cur);
+			sampleNum++;
+		}
+		if (branchDyn && cur->N%bDPsample==0 && cur->N > cur->M){
+			tree.BranchDynamics(brDyn, cd1, pairs, cur);
 			sampleNum++;
 		}
 
@@ -1255,6 +1329,20 @@ void ReadPureBinary(char* fname, Cursor* cur){
 			fclose(fp);
 		}
 	}
+	if (branchDyn){
+		std::cout << "Number of pairs = " << brDyn.size() << std::endl;
+		fp = fopen("clusterDist.txt", "w");
+		for (i = 0; i < brDyn.size(); i++){			
+			for (j = 0; j < brDyn[i].size(); j++){
+				fprintf (fp, "%d", brDyn[i][j]);
+				if (j < brDyn[i].size()-1)
+					fprintf (fp, ",");
+				else
+					fprintf (fp, "\n");
+			}
+		}
+		fclose(fp);
+	}
 }
 
 void Tree::NewickTree(Cursor *cur){
@@ -1368,7 +1456,9 @@ void Help(){
 	std::cout << "-dist - calculate the relative distance between haplotypes based on a sum of exponents of minimal branch size distribution. You can also set the metric parameter with -param [FLOAT]. -minBr [INTEGER] and -maxBr [INTEGER] allows to set tresholds for minimal branch size wich are included in the summary." << std::endl;
 	std::cout << "-brDist - calculate the pairwise minimal branch size distribution. Output in PBWTout folder. Ignores first M sites." << std::endl;
 	std::cout << "-brDistPop - calculate the average of -brDist within and between populations. Population parameters should be pregiven in the code... TODO" << std::endl;
-	std::cout << "-bDPsample [INTEGER] - allows to sample -brDist or -brDistPop, chooses every 1 in INTEGER trees." << std::endl;
+	std::cout << "-brDyn - calculates local cluster distances for a sample of pairs of haplotypes." << std::endl;
+	std::cout << "-brDynSample [INTEGER] - allows to adjust -brDyn sampling: the number of sampled distances will be INTEGER times M." << std::endl;
+	std::cout << "-bDPsample   [INTEGER] - allows to sample -brDist, -brDistPop or -brDyn, chooses every 1 in INTEGER trees." << std::endl;
 	std::cout << "-lc [INTEGER] - set the line counter (reports every INTEGER line) to track the progress." << std::endl;
 	std::cout << "-lf [INTEGER] - set the size of buffer (for example for look forward purpose)." << std::endl;
 	std::cout << "-ll [INTEGER] - set the maxmimal number of sites to process."  << std::endl;
@@ -1443,6 +1533,17 @@ int main(int argc, char *argv[]){
 		else if (strcmp(argv[i], "-brDistPop") == 0){
 			branchDistPop = true;
 			i++;
+		}
+		else if (strcmp(argv[i], "-brDyn") == 0){
+			branchDyn = true;
+			i++;
+		}
+		else if (strcmp(argv[i], "-brDynSample") == 0){
+			brDynSample = strtol(argv[i+1], NULL, 10);
+			i+=2;
+			if (!branchDistPop){
+				std::cout << "WARNING: You have set the flag -brDynSample, but you have not set -brDyn flag, cluster distances will not be computed." << std::endl;
+			}
 		}
 		else if (strcmp(argv[i], "-bDPsample") == 0){
 			bDPsample = strtol(argv[i+1], NULL, 10);
