@@ -1090,7 +1090,7 @@ void ReadPureBinary(char* fname, Cursor* cur){
 			cd1.push_back(0);
 		for (i = 0; i < cur->M; i++)
 			for (j = 0; j < brDynSample; j++){
-				k = static_cast <int>( floor(pow(73+sqrt(47*((j+103)%17)), 2)))%cur->M;
+				k = static_cast <int>( floor(pow(73+i+sqrt(47*((j+103)%17)), 2)))%cur->M;
 				pairs.push_back(std::make_pair(i, k) );
 				brDyn.push_back(emptyVector);
 			}
