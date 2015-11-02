@@ -135,18 +135,22 @@ def InitializeLists(dim, arr, n):
             arr.append(den1)
 
 
-def InitializePairs(pairs, brDyn, M, scd):
-    for i in range(M):
-        for j in range(scd):
-            k = sqrt(47*((j+103)%17))
-            k = ((73+i+k)**2)%M
-            k = int(k)
-            pairs.append([i, k])
-            emptyVector = []
-            brDyn.append(emptyVector)
+def InitializePairs(pairs, brDyn, fnamePairs):
+    with open(fnamePairs, 'r') as f:
+        line = f.readline()
+        hs = line.split()
+        h1 = num(hs[0])
+        h2 = num(hs[1])
+        pairs.append([h1, h2])
+        emptyVector = []
+        brDyn.append(emptyVector)
 
 
-def ClusterDistances(string, pairs, brDyn, lDensity, n):
+def ClusterDistances(string, reset, pairs, brDyn, lDensity, n):
+    if !reset:
+        for i in range(len(pairs)):
+            brDyn[i].append(brDyn[i][-1])
+        return
     string = re.sub(r"(\d+)", r"[\1]", string)
     for i in range(n-1):
         s = re.compile("\(\[([0-9,]+)\],\[([0-9,]+)\]\)")
@@ -164,6 +168,9 @@ def ClusterDistances(string, pairs, brDyn, lDensity, n):
         h1 = pairs[i][0]
         h2 = pairs[i][1]
         brDyn[i].append(lDensity[h2][h1])
+
+
+
 
 print "Clustering method: read and analyze trees in Newick format"
 #n=10
@@ -184,20 +191,27 @@ if mode == "-h":
     print "-sl  [integer]: set the sampling parameter."
     print "-of  [tab, csv]: set the output format (\'csv\' by default)."
     print "-lc  [integer]: set the line counter."
-    print "-scd [integer]: adjust the number of samples of cluster distances."
+#    print "-scd [integer]: adjust the number of samples of cluster distances."
     sys.exit()
 
 try:
     fname = sys.argv[2]
 except IndexError:
-    print "Please specify the filename"
+    print "Please specify the input filename"
     sys.exit()
+    
+if mode == "-c":
+    try:
+        fnamePairs = sys.argv[3]
+    except IndexError:
+        print "Please specify the filename with haplotype pairs"
+        sys.exit()
 
 ll = -1
 sl = 1
 of = "csv"
 lc = 500
-scd = 5
+#scd = 5
 for i in range(3, len(sys.argv)):
     if sys.argv[i] == "-ll":
         i += 1
@@ -217,12 +231,12 @@ for i in range(3, len(sys.argv)):
             lc = num(sys.argv[i])
         except IndexError:
             print "Cannot set sampling parameter, the default value \'500\' will be used."
-    elif sys.argv[i] == "-scd":
-        i += 1
-        try:
-            scd = num(sys.argv[i])
-        except IndexError:
-            print "Cannot set sampling adjuster for cluster distances, the default value \'5\' will be used."
+#    elif sys.argv[i] == "-scd":
+#        i += 1
+#        try:
+#            scd = num(sys.argv[i])
+#        except IndexError:
+#            print "Cannot set sampling adjuster for cluster distances, the default value \'5\' will be used."
     elif sys.argv[i] == "-of":
         i += 1
         try:
@@ -245,12 +259,15 @@ brDyn = []
 for line in f:
     if line.startswith("NEWICK_TREE:"):
         tree = line
+        treeReset = True
     elif line.startswith("SITE:"):
         counter += 1
         if (counter-1)%sl != 0:
             continue
-        s = re.compile('NEWICK_TREE:\t\[[0-9]+\]|\:[0-9]+\.[0-9e\-]+')
-        tree = s.sub('', tree)
+        if treeReset:
+            s = re.compile('NEWICK_TREE:\t\[[0-9]+\]|\:[0-9]+\.[0-9e\-]+')
+            tree = s.sub('', tree)
+            treeReset = False
         if n == -1:
             n = tree.count("(") + 1
             print str(n) + " leaves."
@@ -260,7 +277,7 @@ for line in f:
                 InitializeLists(3, density, n)
             if mode == "-c":
                 InitializeLists(2, lDensity, n)
-                InitializePairs(pairs, brDyn, n, scd)
+                InitializePairs(pairs, brDyn, fnamePairs)
               #  for el in pairs:
                     #print `el[0]` + " " + `el[1]`
         else:
@@ -274,7 +291,7 @@ for line in f:
         if mode == "-i":
             MinBranches(tree, density, n)
         if mode == "-c":
-            ClusterDistances(tree, pairs, brDyn, lDensity, n)
+            ClusterDistances(tree, treeReset, pairs, brDyn, lDensity, n)
         if counter%lc == 0:
             print str(counter) + ' sites analyzed'
         if counter == ll*sl:
