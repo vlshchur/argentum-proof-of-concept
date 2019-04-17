@@ -1025,13 +1025,27 @@ void ReadPureBinary(char* fname, Cursor* cur){
 		exit(EXIT_FAILURE);
 	}
 	time(&timer1);
-	fgets(str, 100000, fp);
+    // Read first line of data (only up to 100000 characters)
+	for (i = 0; i < 100000; i++) {
+	   c = fgetc(fp);
+	   if (('\n' == c) || (EOF == c)) {
+	       str[i] = '\0'; // Terminate the string
+	       break;
+	   } else if (i == (100000-1)) {
+	       //discard the rest up to a newline
+	       while (EOF != (c = fgetc(fp)))
+	           if (c == '\n')
+	               break;
+	   } else {
+	       str[i] = c;
+	   }
+	}
 //	if (strncmp(str, "#BINARY", 7) != 0){
 //		std::cout << "Corrupted binary file " << fname << ", header is corrupted." << std::endl;
 //		exit(EXIT_FAILURE);
 //	}
 	cur->buf.resize(cur->lf);
-	//Read first line of data, find cur->M, initialize tree
+	// find cur->M, initialize tree
 	do{
 		c = fgetc(fp);
 		if (c == '0' || c == '1'){
@@ -1041,7 +1055,7 @@ void ReadPureBinary(char* fname, Cursor* cur){
 				x.push_back(1);
 		}
 		else if (c != '\n' && c != EOF){
-			std::cout << "Fatal error: unexpected charachter \"" << c << "\"." << std::endl;
+			std::cout << "Fatal error: unexpected character \"" << c << "\"." << std::endl;
 			exit(EXIT_FAILURE);
 		}
 	}while(c != '\n' && c!= EOF);
